@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>喵喵養成日記</title>
+<style>
+:root{--bg:#fff4ea;--ink:#4a3b52;--pink:#ff8fab;--mint:#6fcf9f;--gold:#ffd36b;--sky:#8ecbff;--card:#fff;--line:#f1e1d4}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:"Hiragino Maru Gothic ProN","Noto Sans TC","PingFang TC",system-ui,sans-serif;background:linear-gradient(160deg,#ffd9e4,#dfe6ff);display:flex;justify-content:center;align-items:center;color:var(--ink)}
+#app{width:100%;max-width:430px;height:min(100dvh,880px);background:var(--bg);display:flex;flex-direction:column;border-radius:26px;box-shadow:0 24px 60px #6b4f9440;overflow:hidden;position:relative}
+@media(max-width:450px){#app{border-radius:0;height:100dvh}}
+header{padding:12px 16px 8px;background:#fff;border-bottom:2px solid var(--line)}
+.top{display:flex;align-items:center;gap:10px;font-weight:700}
+.top .sp{flex:1}
+.cn{display:inline-block;width:1.25em;height:1.25em;line-height:1.25em;border-radius:50%;background:var(--gold);color:#8a5a00;border:1.5px solid #e0a800;font-size:.85em;font-weight:800;text-align:center;vertical-align:baseline}
+.modal{position:absolute;inset:0;background:#4a3b52cc;display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal.hide{display:none}
+.mb{background:#fff;border-radius:22px;padding:18px;max-height:100%;overflow:auto;font-size:13px;line-height:1.7}
+.mb h3{font-size:18px;text-align:center;margin-bottom:6px}
+.mb h4{font-size:14px;margin:10px 0 2px}
+.mb ul{padding-left:18px}
+.chip{background:var(--bg);border:2px solid var(--line);border-radius:99px;padding:3px 10px;font-size:14px}
+#x2{background:var(--gold);border-radius:99px;padding:2px 8px;font-size:12px}
+.bar{height:10px;background:#f3e8df;border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:9px;transition:width .4s,background .4s}
+#expf{background:var(--sky)}
+main{flex:1;overflow-y:auto;padding:14px 16px}
+section{display:none}section.on{display:block}
+nav{display:flex;background:#fff;border-top:2px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0)}
+nav button{flex:1;border:0;background:none;padding:9px 0 7px;font:inherit;font-size:12px;color:#a090a8;cursor:pointer}
+nav button b{display:block;font-size:22px;font-weight:400;filter:grayscale(1);opacity:.7}
+nav button.on{color:var(--ink);font-weight:700}
+nav button.on b{filter:none;opacity:1}
+h2{font-size:16px;margin:4px 0 10px}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px;margin-bottom:12px}
+.stage{position:relative;height:250px;border-radius:22px;background:radial-gradient(circle at 50% 85%,#ffe1c4 0 38%,#ffeedd 39% 60%,#fff9f2 61%);border:2px solid var(--line);display:flex;justify-content:center;align-items:flex-end;overflow:hidden}
+#cat{width:210px;cursor:pointer;touch-action:manipulation;transform-origin:50% 100%;animation:breathe 3s ease-in-out infinite}
+#cat.jump{animation:jump .6s}
+#cat.sleep{animation:breathe 5s ease-in-out infinite}
+#cat svg{width:100%;display:block;overflow:visible}
+.tail{transform-origin:148px 160px;animation:wag 1.6s ease-in-out infinite}
+.sad .tail,.sleepy .tail{animation-duration:4s}
+.zz{position:absolute;right:20%;top:18%;font-size:30px;animation:zz 2s infinite;display:none}
+.stage.sleeping .zz{display:block}
+.float{position:absolute;font-size:26px;pointer-events:none;animation:up 1.4s forwards}
+.badge{position:absolute;left:10px;top:10px;background:#ffffffcc;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:700}
+@keyframes breathe{50%{transform:scale(1.025,.975)}}
+@keyframes jump{30%{transform:translateY(-34px) scale(.96,1.05)}60%{transform:translateY(0) scale(1.05,.94)}}
+@keyframes wag{50%{transform:rotate(14deg)}}
+@keyframes up{to{transform:translateY(-90px);opacity:0}}
+@keyframes zz{50%{transform:translateY(-10px);opacity:.4}}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:12px 0}
+.stat{font-size:12px;font-weight:700}
+.stat .bar{margin-top:3px}
+.acts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.btn{border:0;border-radius:16px;padding:10px 4px;font:inherit;font-size:13px;font-weight:700;background:var(--pink);color:#fff;cursor:pointer;box-shadow:0 4px 0 #e0688a;transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #e0688a}
+.btn:disabled{opacity:.45;box-shadow:none}
+.btn.g{background:var(--mint);box-shadow:0 4px 0 #46a97b}
+.btn.s{background:var(--sky);box-shadow:0 4px 0 #5fa5e0}
+.btn.y{background:var(--gold);color:var(--ink);box-shadow:0 4px 0 #e0b23c}
+.btn.sm{padding:6px 12px;font-size:12px;border-radius:12px}
+.acts .btn span{display:block;font-size:22px}
+#cv{width:100%;aspect-ratio:360/460;border-radius:18px;background:linear-gradient(#bfe6ff,#fff2dc);touch-action:none;display:block;border:2px solid var(--line)}
+.wrap{position:relative}
+.ov{position:absolute;inset:0;background:#4a3b52cc;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;text-align:center;padding:20px}
+.ov.hide{display:none}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.row:last-child{border:0}
+.row .e{font-size:28px}.row .t{flex:1;font-size:13px}.row .t small{display:block;color:#8d7d95}
+.inv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.slot{text-align:center;background:var(--bg);border-radius:14px;padding:8px 4px;font-size:12px}
+.slot .e{font-size:26px;display:block}
+.dex{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dc{text-align:center;font-size:12px;background:var(--bg);border-radius:14px;padding:6px}
+.dc svg{width:80px}.dc.lock svg{filter:brightness(0) opacity(.25)}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:4px 0}
+.tag{font-size:12px;color:#8d7d95}
+#toast{position:absolute;left:50%;bottom:84px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:8px 16px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;transition:.3s;white-space:nowrap;max-width:90%}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="top" style="margin-bottom:8px"><span style="font-size:17px">🐱 喵喵養成日記</span><span class="sp"></span><button class="chip" id="helpBtn" style="font:inherit;font-size:13px;cursor:pointer;color:inherit">❓ 玩法</button></div>
+  <div class="top"><span class="chip" id="lv">Lv.1</span><span id="x2" hidden>經驗 ×2</span><span class="sp"></span><span class="chip"><span class="cn">$</span> <span id="coin">0</span></span></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-top:8px"><div class="bar" style="flex:1"><i id="expf"></i></div><span class="tag" id="expt"></span></div>
+</header>
+<main>
+<section id="t-home" class="on">
+  <div class="stage" id="stage"><span class="badge" id="stageName"></span><span class="zz">💤</span><div id="cat"></div></div>
+  <div class="stats" id="stats"></div>
+  <div class="acts">
+    <button class="btn" data-a="feed"><span>🍙</span>餵食</button>
+    <button class="btn g" data-a="play"><span>🧶</span>遊玩</button>
+    <button class="btn s" data-a="bath"><span>🛁</span>洗澡</button>
+    <button class="btn y" data-a="sleep" id="bSleep"><span>😴</span>睡覺</button>
+  </div>
+  <p class="tag" style="text-align:center;margin-top:12px">點一下貓咪可以摸摸牠</p>
+</section>
+<section id="t-work">
+  <h2>🍎 接水果打工</h2>
+  <div class="wrap">
+    <canvas id="cv" width="360" height="460"></canvas>
+    <div class="ov" id="ov"><div style="font-size:42px">🧺</div><div id="ovT" style="font-size:14px;line-height:1.7">滑動手指或移動滑鼠控制籃子<br>30 秒內接水果，避開炸彈<br>每次消耗 15 點體力</div><button class="btn y" id="goWork" style="padding:10px 28px">開始打工</button></div>
+  </div>
+  <p class="tag" style="margin-top:8px">個人最高分：<b id="best">0</b></p>
+</section>
+<section id="t-shop">
+  <h2>🛒 道具商店</h2><div class="panel" id="shop"></div>
+  <h2>🎒 背包</h2><div class="panel"><div class="inv" id="inv"></div></div>
+</section>
+<section id="t-dex">
+  <h2>📖 進化圖鑑</h2><div class="dex" id="dex"></div>
+  <h2 style="margin-top:14px">📊 成長數據</h2><div class="panel" id="sts"></div>
+  <h2>🏆 打工排行榜 Top 5</h2><div class="panel" id="rank"></div>
+  <button class="btn" id="reset" style="width:100%;background:#9a8aa3;box-shadow:0 4px 0 #75657d">重置遊戲</button>
+</section>
+</main>
+<nav>
+  <button class="on" data-t="home"><b>🏠</b>養成</button>
+  <button data-t="work"><b>💼</b>打工</button>
+  <button data-t="shop"><b>🛍️</b>商店</button>
+  <button data-t="dex"><b>📖</b>圖鑑</button>
+</nav>
+<div class="modal hide" id="help"><div class="mb">
+  <h3>🐱 喵喵養成日記</h3>
+  <p style="text-align:center;color:#8d7d95">領養一隻小貓，照顧牠、陪牠長大</p>
+  <h4>🎯 遊戲目標</h4>
+  <p>把小貓養到 <b>Lv.15</b>，讓牠一路進化成皇家傳說神貓，並集滿圖鑑裡的 4 個進化階段。</p>
+  <h4>🏠 養成：照顧貓咪</h4>
+  <ul>
+   <li>四個數值會隨時間慢慢下降：<b>飽足、心情、體力、清潔</b>，任何一項低於 25，貓咪就會沮喪。</li>
+   <li>按<b>餵食、遊玩、洗澡</b>補充數值，累了就按<b>睡覺</b>回復體力（睡覺時不能做其他事）。</li>
+   <li>每次照顧都會得到經驗，升級時還有金幣獎勵。點一下貓咪也能摸摸牠。</li>
+  </ul>
+  <h4>💼 打工：接水果賺錢</h4>
+  <ul>
+   <li>用手指按住滑動（電腦用滑鼠移動）控制籃子，30 秒內接住掉落的水果。</li>
+   <li>水果 +10 分，<b>炸彈 💣 扣 15 分</b>，要閃開。每次消耗 15 點體力，分數越高賺越多金幣。</li>
+  </ul>
+  <h4>🛍️ 商店與背包</h4>
+  <p>用金幣買道具，到下方背包按「使用」，可以快速補充數值或獲得雙倍經驗。</p>
+  <h4>📖 圖鑑</h4>
+  <p>查看進化階段、成長數據和打工 Top 5。遊戲會自動存檔，想重新開始可在圖鑑頁底部重置。</p>
+  <button class="btn" id="helpOk" style="width:100%;margin-top:12px">開始遊戲</button>
+</div></div>
+<div id="toast"></div>
+</div>
+<script>
+const KEY='meow_pet_v1';
+const $=s=>document.querySelector(s);
+const cl=v=>Math.max(0,Math.min(100,v));
+const STAGES=[{n:'幼年萌萌小貓',r:'LV 1–4'},{n:'成長體花貓',r:'LV 5–9'},{n:'成熟體魔法貓',r:'LV 10–14'},{n:'皇家傳說神貓',r:'LV 15+'}];
+const ITEMS=[
+ {id:'apple',e:'🍎',n:'大飽足蘋果',d:'飽足度 +45',p:30},
+ {id:'toy',e:'🧸',n:'開心玩具',d:'心情 +40',p:40},
+ {id:'drink',e:'🥤',n:'體力飲料',d:'體力 +45',p:35},
+ {id:'soap',e:'🧼',n:'香香泡泡皂',d:'清潔度 +45',p:25},
+ {id:'potion',e:'🧪',n:'雙倍經驗藥水',d:'5 分鐘內經驗 ×2',p:80}];
+const BARS=[['hunger','🍙 飽足度','#ffb347'],['mood','💗 心情','#ff8fab'],['energy','⚡ 體力','#ffd36b'],['clean','💦 清潔度','#8ecbff']];
+const def=()=>({exp:0,level:1,coins:50,hunger:80,mood:80,energy:80,clean:80,sleeping:false,maxStage:0,
+  inv:{apple:0,toy:0,drink:0,soap:0,potion:0},dbl:0,
+  stats:{fed:0,played:0,bathed:0,slept:0,works:0,earned:0,items:0},scores:[],born:Date.now(),last:Date.now()});
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s){const d=def();return Object.assign(d,s,{inv:Object.assign(d.inv,s.inv),stats:Object.assign(d.stats,s.stats)})}}catch(e){}return def()}
+let gameState=load();
+function save(){gameState.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(gameState))}catch(e){}}
+const need=()=>gameState.level*30+20;
+const stage=()=>gameState.level<5?0:gameState.level<10?1:gameState.level<15?2:3;
+
+/* ---------- 貓咪 SVG ---------- */
+function catSVG(st,face){
+  const fur=['#ffd9a8','#fff3e6','#cdb8ff','#fff8e1'][st],ear='#ffb3c1',dk='#4a3b52';
+  let eyes,mouth;
+  if(face=='sleep'){eyes=`<path d="M74 90q9 8 18 0M108 90q9 8 18 0" fill="none" stroke="${dk}" stroke-width="3.5" stroke-linecap="round"/>`;mouth=`<path d="M95 108q5 3 10 0" fill="none" stroke="${dk}" stroke-width="2.5" stroke-linecap="round"/>`}
+  else if(face=='sad'){eyes=`<ellipse cx="83" cy="94" rx="6" ry="7" fill="${dk}"/><ellipse cx="117" cy="94" rx="6" ry="7" fill="${dk}"/><path d="M70 80l24 8M130 80l-24 8" stroke="${dk}" stroke-width="3" stroke-linecap="round"/><path d="M80 104q-3 8 0 12" stroke="#8ecbff" stroke-width="3" fill="none" stroke-linecap="round"/>`;mouth=`<path d="M92 114q8-7 16 0" fill="none" stroke="${dk}" stroke-width="2.5" stroke-linecap="round"/>`}
+  else if(face=='happy'){eyes=`<path d="M74 93q9-11 18 0M108 93q9-11 18 0" fill="none" stroke="${dk}" stroke-width="3.5" stroke-linecap="round"/><circle cx="68" cy="105" r="7" fill="#ff8fab" opacity=".45"/><circle cx="132" cy="105" r="7" fill="#ff8fab" opacity=".45"/>`;mouth=`<path d="M91 106q9 10 18 0z" fill="#ff7a93" stroke="${dk}" stroke-width="2" stroke-linejoin="round"/>`}
+  else{eyes=`<ellipse cx="83" cy="90" rx="7" ry="9" fill="${dk}"/><ellipse cx="117" cy="90" rx="7" ry="9" fill="${dk}"/><circle cx="85" cy="86" r="2.8" fill="#fff"/><circle cx="119" cy="86" r="2.8" fill="#fff"/>`;mouth=`<path d="M92 106q4 5 8 0q4 5 8 0" fill="none" stroke="${dk}" stroke-width="2.5" stroke-linecap="round"/>`}
+  const wings=st==3?`<g fill="#fff" stroke="#ffd36b" stroke-width="3"><ellipse cx="42" cy="118" rx="34" ry="14" transform="rotate(-38 42 118)"/><ellipse cx="50" cy="140" rx="26" ry="10" transform="rotate(-18 50 140)"/><ellipse cx="158" cy="118" rx="34" ry="14" transform="rotate(38 158 118)"/><ellipse cx="150" cy="140" rx="26" ry="10" transform="rotate(18 150 140)"/></g>`:'';
+  const patch=st==1?`<ellipse cx="70" cy="68" rx="14" ry="10" fill="#ff9d4d" transform="rotate(-20 70 68)"/><ellipse cx="134" cy="76" rx="12" ry="9" fill="#6b5560"/><ellipse cx="118" cy="168" rx="12" ry="8" fill="#ff9d4d"/>`:'';
+  const collar=st==1?`<path d="M70 128q30 16 60 0" fill="none" stroke="#ff5a6e" stroke-width="7" stroke-linecap="round"/><circle cx="100" cy="143" r="7" fill="#ffd36b" stroke="#e0a800" stroke-width="2"/><path d="M100 140v6" stroke="#e0a800" stroke-width="2"/>`:'';
+  const hat=st==2?`<ellipse cx="100" cy="56" rx="50" ry="9" fill="#4b2f8f"/><polygon points="64,56 136,56 104,4" fill="#6a45c4"/><path d="M64 50q36 10 72 0" stroke="#ffd36b" stroke-width="5" fill="none"/><text x="98" y="38" font-size="16" fill="#ffd36b">★</text>`:'';
+  const crown=st==3?`<polygon points="66,56 70,24 86,40 100,16 114,40 130,24 134,56" fill="#ffd36b" stroke="#e0a800" stroke-width="3" stroke-linejoin="round"/><circle cx="100" cy="40" r="4" fill="#ff5a6e"/><circle cx="78" cy="48" r="3" fill="#6fcf9f"/><circle cx="122" cy="48" r="3" fill="#8ecbff"/>`:'';
+  return `<svg viewBox="0 0 200 200">${wings}
+  <path class="tail" d="M146 162q42-6 32-56" fill="none" stroke="${fur}" stroke-width="15" stroke-linecap="round"/>
+  <ellipse cx="100" cy="150" rx="46" ry="38" fill="${fur}"/>${patch}
+  <ellipse cx="78" cy="184" rx="15" ry="10" fill="${fur}"/><ellipse cx="122" cy="184" rx="15" ry="10" fill="${fur}"/>
+  <ellipse cx="78" cy="186" rx="6" ry="4.5" fill="${ear}"/><ellipse cx="122" cy="186" rx="6" ry="4.5" fill="${ear}"/>
+  <g fill="${ear}"><circle cx="70" cy="181" r="2.4"/><circle cx="78" cy="177" r="2.4"/><circle cx="86" cy="181" r="2.4"/><circle cx="114" cy="181" r="2.4"/><circle cx="122" cy="177" r="2.4"/><circle cx="130" cy="181" r="2.4"/></g>
+  <polygon points="58,64 60,18 94,46" fill="${fur}"/><polygon points="142,64 140,18 106,46" fill="${fur}"/>
+  <polygon points="66,52 67,32 82,46" fill="${ear}"/><polygon points="134,52 133,32 118,46" fill="${ear}"/>
+  <circle cx="100" cy="92" r="43" fill="${fur}"/>${collar}
+  ${eyes}<polygon points="95,100 105,100 100,106" fill="#ff7a93"/>${mouth}
+  <g stroke="${dk}" stroke-width="2" stroke-linecap="round" opacity=".7"><path d="M60 100l-26-4M60 108l-26 6M140 100l26-4M140 108l26 6"/></g>
+  ${hat}${crown}</svg>`;
+}
+let sig='';
+function faceNow(){const g=gameState;if(g.sleeping)return'sleep';if(Math.min(g.hunger,g.mood,g.energy,g.clean)<25)return'sad';if(g.mood>65&&g.hunger>35)return'happy';return'normal'}
+function renderCat(){
+  const f=faceNow(),s=stage(),k=s+f;
+  const c=$('#cat');
+  if(k!==sig){sig=k;c.innerHTML=catSVG(s,f)}
+  c.className=(c.classList.contains('jump')?'jump ':'')+(f=='sleep'?'sleep sleepy':f=='sad'?'sad':'');
+  $('#stage').classList.toggle('sleeping',gameState.sleeping);
+}
+function floatIcon(e){
+  const el=document.createElement('span');el.className='float';el.textContent=e;
+  el.style.left=(35+Math.random()*30)+'%';el.style.bottom='45%';
+  $('#stage').appendChild(el);setTimeout(()=>el.remove(),1400);
+}
+function jump(){const c=$('#cat');c.classList.remove('jump');void c.offsetWidth;c.classList.add('jump');setTimeout(()=>c.classList.remove('jump'),650)}
+let tt;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1800)}
+
+/* ---------- 數值 ---------- */
+function addExp(n){
+  const g=gameState;if(g.dbl>Date.now())n*=2;g.exp+=n;
+  while(g.exp>=need()){
+    g.exp-=need();g.level++;g.coins+=15;toast('🎉 升到 Lv.'+g.level+'！獲得 15 金幣');
+    if(stage()>g.maxStage){g.maxStage=stage();setTimeout(()=>toast('✨ 進化成「'+STAGES[stage()].n+'」！'),1900)}
+  }
+}
+function tick(n){
+  const g=gameState;
+  for(let i=0;i<n;i++){
+    if(g.sleeping){g.energy+=4;g.hunger-=.3;g.mood-=.1;g.clean-=.1;if(g.energy>=100){g.sleeping=false;toast('☀️ 睡飽了，精神百倍！')}}
+    else{g.hunger-=1;g.mood-=.8;g.clean-=.6;g.energy-=.5}
+    ['hunger','mood','energy','clean'].forEach(k=>g[k]=cl(g[k]));
+  }
+}
+function act(a){
+  const g=gameState,s=g.stats;
+  if(a=='sleep'){
+    if(g.sleeping){g.sleeping=false;toast('把貓咪叫醒了')}
+    else if(g.energy>=95){toast('貓咪還不想睡')}
+    else{g.sleeping=true;s.slept++;toast('😴 晚安…')}
+  }else if(g.sleeping){toast('貓咪正在睡覺，先叫醒牠')}
+  else if(a=='feed'){if(g.hunger>=98)return toast('貓咪吃飽了');g.hunger=cl(g.hunger+22);g.clean=cl(g.clean-3);s.fed++;addExp(3);floatIcon('🍙')}
+  else if(a=='play'){if(g.energy<10)return toast('太累了，先休息');g.mood=cl(g.mood+22);g.energy=cl(g.energy-10);g.hunger=cl(g.hunger-6);s.played++;addExp(4);floatIcon('💗');jump()}
+  else if(a=='bath'){g.clean=cl(g.clean+35);g.mood=cl(g.mood-3);s.bathed++;addExp(2);floatIcon('💦')}
+  save();render();
+}
+function buy(id){
+  const it=ITEMS.find(i=>i.id==id),g=gameState;
+  if(g.coins<it.p)return toast('金幣不夠，去打工賺錢吧');
+  g.coins-=it.p;g.inv[id]++;toast('買了 '+it.n);save();render();
+}
+function useItem(id){
+  const g=gameState;if(g.inv[id]<=0)return;
+  if(g.sleeping)return toast('貓咪正在睡覺');
+  if(id=='apple')g.hunger=cl(g.hunger+45);
+  if(id=='toy'){g.mood=cl(g.mood+40);jump()}
+  if(id=='drink')g.energy=cl(g.energy+45);
+  if(id=='soap')g.clean=cl(g.clean+45);
+  if(id=='potion')g.dbl=Math.max(g.dbl,Date.now())+5*60000;
+  g.inv[id]--;g.stats.items++;addExp(2);floatIcon(ITEMS.find(i=>i.id==id).e);save();render();
+}
+
+/* ---------- 畫面 ---------- */
+function renderStats(){
+  const g=gameState,box=$('#stats');
+  if(!box.children.length)box.innerHTML=BARS.map(b=>`<div class="stat">${b[1]}<div class="bar"><i id="b-${b[0]}"></i></div></div>`).join('');
+  BARS.forEach(b=>{const el=$('#b-'+b[0]),v=g[b[0]];el.style.width=v+'%';el.style.background=v<25?'#ff6b6b':b[2]})
+}
+function renderShop(){
+  const g=gameState;
+  $('#shop').innerHTML=ITEMS.map(i=>`<div class="row"><span class="e">${i.e}</span><div class="t"><b>${i.n}</b><small>${i.d}</small></div><button class="btn sm y" data-buy="${i.id}" ${g.coins<i.p?'disabled':''}><span class="cn">$</span> ${i.p}</button></div>`).join('');
+  $('#inv').innerHTML=ITEMS.map(i=>`<div class="slot"><span class="e">${i.e}</span>${i.n}<br>×${g.inv[i.id]}<br><button class="btn sm g" style="margin-top:4px" data-use="${i.id}" ${g.inv[i.id]?'':'disabled'}>使用</button></div>`).join('');
+}
+function renderDex(){
+  const g=gameState,s=g.stats;
+  $('#dex').innerHTML=STAGES.map((st,i)=>`<div class="dc ${i>g.maxStage?'lock':''}">${catSVG(i,'happy')}<br><b>${i>g.maxStage?'？？？':st.n}</b><br><span class="tag">${st.r}</span></div>`).join('');
+  const days=Math.max(1,Math.ceil((Date.now()-g.born)/864e5));
+  const kv=[['陪伴天數',days+' 天'],['目前等級','Lv.'+g.level+'（'+STAGES[stage()].n+'）'],['餵食次數',s.fed],['遊玩次數',s.played],['洗澡次數',s.bathed],['睡覺次數',s.slept],['使用道具',s.items],['打工次數',s.works],['累計打工收入','<span class="cn">$</span> '+s.earned]];
+  $('#sts').innerHTML=kv.map(r=>`<div class="kv"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('');
+  $('#rank').innerHTML=g.scores.length?g.scores.map((r,i)=>`<div class="row"><span class="e" style="font-size:22px">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</span><div class="t"><b>${r.s} 分</b><small>${r.t}</small></div></div>`).join(''):'<p class="tag">還沒有紀錄，去打工挑戰高分吧</p>';
+  $('#best').textContent=g.scores.length?g.scores[0].s:0;
+}
+function render(){
+  const g=gameState;
+  if(stage()>g.maxStage)g.maxStage=stage();
+  $('#lv').textContent='Lv.'+g.level;$('#coin').textContent=g.coins;
+  $('#expf').style.width=g.exp/need()*100+'%';$('#expt').textContent=g.exp+'/'+need();
+  $('#x2').hidden=g.dbl<=Date.now();
+  $('#stageName').textContent=STAGES[stage()].n;
+  $('#bSleep').innerHTML=g.sleeping?'<span>☀️</span>叫醒':'<span>😴</span>睡覺';
+  renderStats();renderCat();renderShop();renderDex();
+}
+
+/* ---------- 打工：接水果 ---------- */
+const cv=$('#cv'),cx=cv.getContext('2d'),W=360,H=460,FR=['🍎','🍊','🍇','🍓','🍌'];
+let G=null;
+function startWork(){
+  const g=gameState;
+  if(g.sleeping)return toast('貓咪正在睡覺');
+  if(g.energy<15)return toast('體力不足 15，先休息或喝飲料');
+  g.energy=cl(g.energy-15);
+  G={t:30,score:0,coins:0,items:[],bx:W/2,spawn:.5,last:performance.now(),flash:0};
+  $('#ov').classList.add('hide');render();
+  requestAnimationFrame(loop);
+}
+function loop(now){
+  if(!G)return;
+  const dt=Math.min(.05,(now-G.last)/1000);G.last=now;G.t-=dt;G.spawn-=dt;G.flash=Math.max(0,G.flash-dt);
+  if(G.spawn<=0){
+    G.spawn=.65+Math.random()*.35;
+    const b=Math.random()<.22;
+    G.items.push({x:24+Math.random()*(W-48),y:-24,vy:130+Math.random()*60+(30-G.t)*3,e:b?'💣':FR[Math.random()*FR.length|0],b});
+  }
+  G.items=G.items.filter(o=>{
+    o.y+=o.vy*dt;
+    if(o.y>H-84&&o.y<H-30&&Math.abs(o.x-G.bx)<44){
+      if(o.b){G.score=Math.max(0,G.score-15);G.flash=.25;if(navigator.vibrate)navigator.vibrate(60)}
+      else{G.score+=10;G.coins+=1}
+      return false;
+    }
+    return o.y<H+30;
+  });
+  cx.clearRect(0,0,W,H);
+  cx.textAlign='center';cx.textBaseline='middle';
+  cx.font='34px serif';G.items.forEach(o=>cx.fillText(o.e,o.x,o.y));
+  cx.font='56px serif';cx.fillText('🧺',G.bx,H-50);
+  cx.font='bold 20px sans-serif';cx.fillStyle='#4a3b52';cx.textAlign='left';cx.fillText('分數 '+G.score,14,26);
+  cx.textAlign='right';cx.fillText('⏱ '+Math.max(0,Math.ceil(G.t)),W-14,26);
+  if(G.flash>0){cx.fillStyle='rgba(255,60,60,'+G.flash*1.6+')';cx.fillRect(0,0,W,H)}
+  if(G.t<=0)return endWork();
+  requestAnimationFrame(loop);
+}
+function endWork(){
+  if(!G)return;
+  const g=gameState,r=G;G=null;
+  const pay=r.coins+Math.floor(r.score/20);
+  g.coins+=pay;g.stats.works++;g.stats.earned+=pay;g.mood=cl(g.mood-5);g.hunger=cl(g.hunger-5);
+  if(r.score>0){
+    g.scores.push({s:r.score,t:new Date().toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})});
+    g.scores.sort((a,b)=>b.s-a.s);g.scores=g.scores.slice(0,5);
+  }
+  addExp(8);save();render();
+  $('#ovT').innerHTML='打工結束！<br>得分 <b>'+r.score+'</b>　賺到 <span class="cn">$</span> '+pay+'　經驗 +8';
+  $('#goWork').textContent='再打一次';$('#ov').classList.remove('hide');
+}
+function moveBasket(e){
+  if(!G)return;
+  const r=cv.getBoundingClientRect();
+  G.bx=Math.max(34,Math.min(W-34,(e.clientX-r.left)/r.width*W));
+}
+cv.addEventListener('pointermove',moveBasket);
+cv.addEventListener('pointerdown',e=>{moveBasket(e);try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+
+/* ---------- 事件 ---------- */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  if(G)endWork();
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x==b));
+  document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id=='t-'+b.dataset.t));
+  render();
+});
+document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a));
+$('#goWork').onclick=startWork;
+$('#cat').onclick=()=>{
+  const g=gameState;
+  if(g.sleeping)return toast('噓…貓咪在睡覺');
+  g.mood=cl(g.mood+2);jump();floatIcon('💗');save();render();
+};
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-buy]'),u=e.target.closest('[data-use]');
+  if(b)buy(b.dataset.buy);if(u)useItem(u.dataset.use);
+});
+$('#reset').onclick=()=>{
+  if(!confirm('確定要重置所有進度嗎？此動作無法復原。'))return;
+  try{localStorage.removeItem(KEY)}catch(e){}
+  G=null;gameState=def();sig='';$('#ov').classList.remove('hide');
+  $('#ovT').innerHTML='滑動手指或移動滑鼠控制籃子<br>30 秒內接水果，避開炸彈<br>每次消耗 15 點體力';
+  $('#goWork').textContent='開始打工';save();render();toast('已重置，歡迎新的小貓！');
+};
+
+const SEEN=KEY+'_seen';
+function showHelp(){$('#help').classList.remove('hide')}
+$('#helpBtn').onclick=showHelp;
+$('#helpOk').onclick=()=>{$('#help').classList.add('hide');try{localStorage.setItem(SEEN,'1')}catch(e){}};
+try{if(!localStorage.getItem(SEEN))showHelp()}catch(e){showHelp()}
+
+/* ---------- 啟動 ---------- */
+tick(Math.min(Math.floor((Date.now()-gameState.last)/3000),200));
+render();save();
+setInterval(()=>{tick(1);save();render()},3000);
+</script>
+</body>
+</html>
